@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Кинотека - лучшие фильмы</title>
+    <style>
+        /* ---------- RESET & БАЗОВЫЕ СТИЛИ ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease, color 0.2s ease, border-color 0.2s ease;
+        }
+
+        body {
+            font-family: system-ui, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            line-height: 1.5;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            padding: 0 1rem 2rem;
+        }
+
+        /* ---------- ТЕМЫ (светлая / тёмная) ---------- */
+        :root {
+            --bg-body: #f8f9fa;
+            --bg-surface: #ffffff;
+            --bg-card: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #334155;
+            --border-light: #e2e8f0;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --btn-secondary-bg: #f1f5f9;
+            --btn-secondary-hover: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --footer-bg: #ffffff;
+        }
+
+        body.dark {
+            --bg-body: #0f172a;
+            --bg-surface: #1e293b;
+            --bg-card: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --border-light: #334155;
+            --accent: #60a5fa;
+            --accent-hover: #93c5fd;
+            --btn-secondary-bg: #334155;
+            --btn-secondary-hover: #475569;
+            --footer-bg: #1e293b;
+        }
+
+        /* ---------- ОБЩИЕ КОМПОНЕНТЫ ---------- */
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 0.5rem;
+        }
+
+        /* ШАПКА */
+        header {
+            background-color: var(--bg-surface);
+            border-bottom: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 2rem;
+            border-radius: 0 0 1.5rem 1.5rem;
+            padding: 1rem 0;
+        }
+
+        .header-container {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .logo h1 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.8rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        .theme-toggle {
+            background: var(--btn-secondary-bg);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Секции */
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            border-left: 5px solid var(--accent);
+            padding-left: 1rem;
+        }
+
+        /* Сетка карточек (Grid + Flex резерв) */
+        .movies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1.8rem;
+            margin-bottom: 2.5rem;
+        }
+
+        /* Карточка фильма */
+        .movie-card {
+            background-color: var(--bg-card);
+            border-radius: 1.2rem;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.2);
+        }
+
+        .movie-poster {
+            background: linear-gradient(145deg, #2d3a4e, #1f2a3a);
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+            font-weight: bold;
+        }
+
+        .movie-info {
+            padding: 1.2rem;
+        }
+
+        .movie-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+        }
+
+        .movie-year {
+            color: var(--accent);
+            font-weight: 500;
+            margin-bottom: 0.6rem;
+            font-size: 0.9rem;
+        }
+
+        .movie-desc {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Кнопки */
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.7rem 1.6rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+            transform: scale(1.02);
+        }
+
+        .btn-secondary {
+            background-color: var(--btn-secondary-bg);
+            border: 1px solid var(--border-light);
+            padding: 0.6rem 1.2rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .button-wrapper {
+            text-align: center;
+            margin: 1rem 0 2rem;
+        }
+
+        /* Форма */
+        .feedback-section {
+            background-color: var(--bg-surface);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            margin-top: 2rem;
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.4rem;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border-radius: 1rem;
+            border: 1px solid var(--border-light);
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+        }
+
+        .error-msg {
+            color: #ef4444;
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+            display: block;
+        }
+
+        /* футер */
+        footer {
+            background-color: var(--footer-bg);
+            margin-top: 3rem;
+            padding: 1.5rem 0;
+            text-align: center;
+            border-top: 1px solid var(--border-light);
+            border-radius: 1rem 1rem 0 0;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 680px) {
+            .header-container {
+                flex-direction: column;
+                text-align: center;
+            }
+            .movies-grid {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-container">
+            <div class="logo">
+                <h1>🎬 Кинотека</h1>
+            </div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="#movies">Фильмы</a></li>
+                    <li><a href="#feedback">Отзывы</a></li>
+                    <li><a href="#" id="nav-theme-demo">Сменить тему</a></li>
+                </ul>
+            </nav>
+            <button class="theme-toggle" id="themeToggleBtn" aria-label="Переключить тему">
+                🌙 Тёмная тема
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <!-- Блок с карточками ФИЛЬМОВ -->
+            <section id="movies">
+                <h2 class="section-title">🔥 Популярные фильмы</h2>
+                <div class="movies-grid" id="moviesGrid"></div>
+                <div class="button-wrapper">
+                    <button class="btn-primary" id="showMoreBtn">➕ Показать еще</button>
+                </div>
+            </section>
+
+            <!-- Форма обратной связи -->
+            <section id="feedback" class="feedback-section">
+                <h2 class="section-title" style="border-left-color: var(--accent); margin-bottom: 1rem;">✍️ Обратная связь</h2>
+                <form id="feedbackForm">
+                    <div class="form-group">
+                        <label for="name">Имя *</label>
+                        <input type="text" id="name" name="name" placeholder="Введите ваше имя" required>
+                        <div class="error-msg" id="nameError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" name="email" placeholder="example@domain.com" required>
+                        <div class="error-msg" id="emailError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Сообщение *</label>
+                        <textarea id="message" name="message" rows="3" placeholder="Поделитесь впечатлениями о фильмах..." required></textarea>
+                        <div class="error-msg" id="msgError"></div>
+                    </div>
+                    <button type="submit" class="btn-primary">📨 Отправить</button>
+                </form>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Кинотека — Все права защищены. Любим кино с душой.</p>
+            <p style="font-size: 0.8rem; margin-top: 0.5rem;">✨ Ваше мнение важно для нас ✨</p>
+        </div>
+    </footer>
+
+    <script>
+        // ----- БАЗА ДАННЫХ ФИЛЬМОВ (стартовые + дополнительные) -----
+        const initialMovies = [
+            {
+                id: 1,
+                title: "Интерстеллар",
+                year: "2014",
+                desc: "Группа исследователей использует недавно открытый червоточину, чтобы превзойти ограничения космических путешествий.",
+                posterEmoji: "🌌"
+            },
+            {
+                id: 2,
+                title: "Побег из Шоушенка",
+                year: "1994",
+                desc: "Банкир Энди Дюфрейн несправедливо осуждён за убийство жены и её любовника.",
+                posterEmoji: "🔨"
+            },
+            {
+                id: 3,
+                title: "Тёмный рыцарь",
+                year: "2008",
+                desc: "Бэтмен противостоит Джокеру, который желает погрузить Готэм в хаос.",
+                posterEmoji: "🦇"
+            },
+            {
+                id: 4,
+                title: "Начало",
+                year: "2010",
+                desc: "Вор, способный проникать в чужие сны, получает последнее задание по внедрению идеи.",
+                posterEmoji: "🌀"
+            }
+        ];
+
+        const additionalMovies = [
+            {
+                id: 5,
+                title: "Форрест Гамп",
+                year: "1994",
+                desc: "Простой и добрый человек из Алабамы становится участником важнейших событий XX века.",
+                posterEmoji: "🍫"
+            },
+            {
+                id: 6,
+                title: "Матрица",
+                year: "1999",
+                desc: "Программист Томас Андерсон узнаёт, что реальность — это всего лишь симуляция.",
+                posterEmoji: "💊"
+            },
+            {
+                id: 7,
+                title: "Криминальное чтиво",
+                year: "1994",
+                desc: "Два гангстера, боксёр и жена мафиози переплетаются в нелинейном повествовании.",
+                posterEmoji: "🔫"
+            },
+            {
+                id: 8,
+                title: "Бойцовский клуб",
+                year: "1999",
+                desc: "Офисный работник создаёт подпольный клуб для борьбы с потребительским обществом.",
+                posterEmoji: "🧼"
+            },
+            {
+                id: 9,
+                title: "Властелин колец: Братство кольца",
+                year: "2001",
+                desc: "Хоббит Фродо отправляется в опасное путешествие, чтобы уничтожить Кольцо Всевластья.",
+                posterEmoji: "💍"
+            },
+            {
+                id: 10,
+                title: "Джокер",
+                year: "2019",
+                desc: "Психологическая драма о становлении культового злодея Готэма.",
+                posterEmoji: "🎭"
+            }
+        ];
+
+        // Состояние
+        let currentMovies = [...initialMovies];
+        let loadedCount = initialMovies.length;    // сколько показано на данный момент
+        let allMoviesPool = [...initialMovies];    // все когда-либо добавленные (уникальные)
+
+        // Ссылки на DOM
+        const moviesGrid = document.getElementById("moviesGrid");
+        const showMoreBtn = document.getElementById("showMoreBtn");
+        const themeToggleBtn = document.getElementById("themeToggleBtn");
+        const feedbackForm = document.getElementById("feedbackForm");
+
+        // ------------- 1. ОТРИСОВКА КАРТОЧЕК (используем grid) -------------
+        function renderMovies() {
+            if (!moviesGrid) return;
+            moviesGrid.innerHTML = "";
+            // отображаем только те фильмы, которые в currentMovies
+            currentMovies.forEach(movie => {
+                const card = document.createElement("article");
+                card.className = "movie-card";
+                card.setAttribute("data-id", movie.id);
+                card.innerHTML = `
+                    <div class="movie-poster" style="background: linear-gradient(135deg, #2d3a4e, #1f2a3a);">
+                        <span style="font-size: 4rem;">${movie.posterEmoji || "🎞️"}</span>
+                    </div>
+                    <div class="movie-info">
+                        <h3 class="movie-title">${escapeHtml(movie.title)}</h3>
+                        <div class="movie-year">${movie.year} год</div>
+                        <p class="movie-desc">${escapeHtml(movie.desc)}</p>
+                    </div>
+                `;
+                moviesGrid.appendChild(card);
+            });
+
+            // Если все возможные фильмы уже загружены, блокируем кнопку
+            if (loadedCount >= allMoviesPool.length) {
+                showMoreBtn.disabled = true;
+                showMoreBtn.textContent = "✅ Все фильмы загружены";
+                showMoreBtn.style.opacity = "0.6";
+                showMoreBtn.style.cursor = "not-allowed";
+            } else {
+                showMoreBtn.disabled = false;
+                showMoreBtn.textContent = "➕ Показать еще";
+                showMoreBtn.style.opacity = "1";
+                showMoreBtn.style.cursor = "pointer";
+            }
+        }
+
+        // простая защита от XSS
+        function escapeHtml(str) {
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+                return c;
+            });
+        }
+
+        // ------------- 2. КНОПКА "ПОКАЗАТЬ ЕЩЕ" (динамическое добавление) -------------
+        function loadMoreMovies() {
+            // Смотрим, сколько фильмов ещё не добавлено в текущий массив показа
+            const allExistingIds = new Set(currentMovies.map(m => m.id));
+            const notYetLoaded = allMoviesPool.filter(m => !allExistingIds.has(m.id));
+
+            if (notYetLoaded.length === 0) {
+                // нечего добавлять
+                return;
+            }
+
+            // Добавляем сразу 2 новых фильма за раз (можно менять количество)
+            const toAddCount = Math.min(2, notYetLoaded.length);
+            const newMovies = notYetLoaded.slice(0, toAddCount);
+            currentMovies.push(...newMovies);
+            loadedCount = currentMovies.length;
+            renderMovies();
+        }
+
+        // Инициализация: подписываем кнопку "Показать еще"
+        if (showMoreBtn) {
+            showMoreBtn.addEventListener("click", loadMoreMovies);
+        }
+
+        // ------------- 3. ПЕРЕКЛЮЧЕНИЕ ТЕМЫ + localStorage -------------
+        function initTheme() {
+            const savedTheme = localStorage.getItem("theme");
+            if (savedTheme === "dark") {
+                document.body.classList.add("dark");
+                updateThemeButtonText(true);
+            } else if (savedTheme === "light") {
+                document.body.classList.remove("dark");
+                updateThemeButtonText(false);
+            } else {
+                // если не сохранено, проверяем предпочтения системы (опционально)
+                const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+                if (prefersDark) {
+                    document.body.classList.add("dark");
+                    updateThemeButtonText(true);
+                    localStorage.setItem("theme", "dark");
+                } else {
+                    document.body.classList.remove("dark");
+                    updateThemeButtonText(false);
+                    localStorage.setItem("theme", "light");
+                }
+            }
+        }
+
+        function updateThemeButtonText(isDark) {
+            if (themeToggleBtn) {
+                if (isDark) {
+                    themeToggleBtn.innerHTML = "☀️ Светлая тема";
+                } else {
+                    themeToggleBtn.innerHTML = "🌙 Тёмная тема";
+                }
+            }
+        }
+
+        function toggleTheme() {
+            const isDark = document.body.classList.contains("dark");
+            if (isDark) {
+                document.body.classList.remove("dark");
+                localStorage.setItem("theme", "light");
+                updateThemeButtonText(false);
+            } else {
+                document.body.classList.add("dark");
+                localStorage.setItem("theme", "dark");
+                updateThemeButtonText(true);
+            }
+        }
+
+        if (themeToggleBtn) {
+            themeToggleBtn.addEventListener("click", toggleTheme);
+        }
+
+        // Добавляем возможность через навигацию менять тему (доп. удобство)
+        const navThemeLink = document.getElementById("nav-theme-demo");
+        if (navThemeLink) {
+            navThemeLink.addEventListener("click", (e) => {
+                e.preventDefault();
+                toggleTheme();
+            });
+        }
+
+        // ------------- 4. ФОРМА: валидация + console.log -------------
+        const nameInput = document.getElementById("name");
+        const emailInput = document.getElementById("email");
+        const messageInput = document.getElementById("message");
+        const nameError = document.getElementById("nameError");
+        const emailError = document.getElementById("emailError");
+        const msgError = document.getElementById("msgError");
+
+        function validateEmail(email) {
+            const re = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/;
+            return re.test(email.trim());
+        }
+
+        function clearErrors() {
+            if (nameError) nameError.textContent = "";
+            if (emailError) emailError.textContent = "";
+            if (msgError) msgError.textContent = "";
+        }
+
+        function validateForm() {
+            let isValid = true;
+            clearErrors();
+
+            const nameValue = nameInput ? nameInput.value.trim() : "";
+            if (nameValue === "") {
+                if (nameError) nameError.textContent = "Пожалуйста, введите ваше имя";
+                isValid = false;
+            } else if (nameValue.length < 2) {
+                if (nameError) nameError.textContent = "Имя должно содержать минимум 2 символа";
+                isValid = false;
+            }
+
+            const emailValue = emailInput ? emailInput.value.trim() : "";
+            if (emailValue === "") {
+                if (emailError) emailError.textContent = "Email обязателен для обратной связи";
+                isValid = false;
+            } else if (!validateEmail(emailValue)) {
+                if (emailError) emailError.textContent = "Введите корректный email (например, name@domain.com)";
+                isValid = false;
+            }
+
+            const msgValue = messageInput ? messageInput.value.trim() : "";
+            if (msgValue === "") {
+                if (msgError) msgError.textContent = "Сообщение не может быть пустым";
+                isValid = false;
+            } else if (msgValue.length < 5) {
+                if (msgError) msgError.textContent = "Сообщение должно содержать хотя бы 5 символов";
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            if (!validateForm()) return;
+
+            // Собираем данные
+            const formData = {
+                name: nameInput.value.trim(),
+                email: emailInput.value.trim(),
+                message: messageInput.value.trim(),
+                timestamp: new Date().toLocaleString()
+            };
+            console.log("📨 Данные формы обратной связи:");
+            console.log(formData);
+            // Дополнительно можно показать уведомление (не обязательно, но приятно)
+            alert("Спасибо, " + formData.name + "! Ваше сообщение отправлено (проверьте консоль браузера).");
+            // Очищаем форму
+            if (feedbackForm) feedbackForm.reset();
+            clearErrors();
+        }
+
+        if (feedbackForm) {
+            feedbackForm.addEventListener("submit", handleFormSubmit);
+        }
+
+        // ------------- ДОПОЛНИТЕЛЬНО: Инициализация пула фильмов (чтобы показать еще добавлял из additionalMovies) -------------
+        // Объединяем первоначальный пул с доп. фильмами, избегая дубликатов по id
+        function buildFullMoviesPool() {
+            const combined = [...initialMovies];
+            for (let movie of additionalMovies) {
+                if (!combined.some(ex => ex.id === movie.id)) {
+                    combined.push(movie);
+                }
+            }
+            // Сортируем по id для предсказуемости
+            combined.sort((a,b) => a.id - b.id);
+            return combined;
+        }
+
+        // Перезаписываем allMoviesPool полным списком (initial + additional)
+        allMoviesPool = buildFullMoviesPool();
+        // Устанавливаем currentMovies = только изначальные (4 шт)
+        currentMovies = [...initialMovies];
+        loadedCount = currentMovies.length;
+        
+        // Первичный рендер
+        renderMovies();
+
+        // дополнительная проверка: адаптируем кнопку если доп. фильмов нет (но они есть)
+        if (loadedCount >= allMoviesPool.length) {
+            showMoreBtn.disabled = true;
+            showMoreBtn.textContent = "✅ Все фильмы загружены";
+        }
+
+        // Применяем тему (localStorage)
+        initTheme();
+
+        // Добавляем якорную плавную прокрутку для ссылок
+        document.querySelectorAll('.nav-links a').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                const hash = this.getAttribute('href');
+                if (hash && hash !== "#" && hash.startsWith("#")) {
+                    const targetId = hash.substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement) {
+                        e.preventDefault();
+                        targetElement.scrollIntoView({ behavior: 'smooth' });
+                    }
+                } else if (hash === "#" && this.id !== "nav-theme-demo") {
+                    // пустая ссылка
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
